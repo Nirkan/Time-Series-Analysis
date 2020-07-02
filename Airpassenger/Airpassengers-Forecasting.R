@@ -1,39 +1,52 @@
 
-# Time series Data
+## Time series Data
 
 data("AirPassengers")
 
 AP <- AirPassengers
 
-str(AP)
 
-head(AP)
+## ARIMA - Autoregression Integreated Moving Average
 
-ts(AP, frequency = 12, start = c(1949,1))
+library(forecast)
 
-attributes(AP)
+model <- auto.arima(AP)
 
-plot(AP)
+print(model)
 
-
-## Log Transformation : To reduce th fluctuation
-
-AP <- log(AP)
-plot(AP)
+attributes(model)
 
 
-## Decomposition of additive time series
+## ACF and PACF plots
 
-decomp <- decompose(AP)
-decomp$figure
+acf(model$residuals, main = "Correlogram")
 
-plot(decomp$figure,
-     type = 'b',
-     xlab = 'Month',
-     ylab = 'Seasonality Index',
-      col = 'blue',
-      las = 2
-      )
+pacf(model$residuals, main = 'Partial Correlogram')
 
 
-plot(decomp)
+## Ljung-Box test
+
+Box.test(model$residuals, lag=20, type = "Ljung-Box")
+
+
+## Residual plot
+
+hist(model$residuals, 
+     col = 'darkgreen',
+     xlab = 'Error',
+     main = 'Histogram of Residuals',
+     freq = FALSE)
+
+lines(density(model$residuals))
+
+
+## Forescast
+
+f <- forecast(model, 48)
+
+library(ggplot2)
+
+autoplot(f)
+
+accuracy(f)
+
